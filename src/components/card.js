@@ -1,6 +1,5 @@
 // Для работы с карточками
 
-// Импорты
 // Темплейт карточки
 const templateCard = document.querySelector('#card-template').content;
 
