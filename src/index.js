@@ -1,7 +1,7 @@
 import './index.css';
 import { initialCards } from './cards';
 import { createCard, removeCard, handleCardLike } from './components/card.js';
-import { openPopup, closePopup, handlePopupCloseOverlay, profileForm, jobInput, nameInput, currentName, currentJob } from './components/modal.js';
+import { openPopup, closePopup, handlePopupCloseOverlay } from './components/modal.js';
 
 // DOM узлы
 const cardsContainer = document.querySelector('.places__list');
@@ -12,6 +12,11 @@ const popupCard = document.querySelector('.popup_type_new-card');
 const popupImage = document.querySelector('.popup_type_image');
 const popupImageContent = popupImage.querySelector('.popup__image');
 const popupCaption = document.querySelector('.popup__caption');
+const profileForm = document.forms['edit-profile'];
+const jobInput = profileForm.elements.description;
+const nameInput = profileForm.elements.name;
+const currentName = document.querySelector('.profile__title');
+const currentJob = document.querySelector('.profile__description');
 const cardForm = document.forms['new-place'];
 const nameCardInput = cardForm.elements['place-name'];
 const linkCardInput = cardForm.elements.link;
@@ -41,7 +46,7 @@ function handleFormSubmitProfile(event) {
     event.preventDefault();
     currentJob.textContent = jobInput.value;
     currentName.textContent = nameInput.value;
-    closePopup(event.target.closest('.popup'));
+    closePopup(popupProfile);
 }
 
 // Отправка новых данных из формы профиля
@@ -67,7 +72,7 @@ function handleFormSubmitCard(event) {
     };
     cardsContainer.prepend(createCard(cardFormData, popupImage, removeCard, handleCardLike, openPopupImage));
     cardForm.reset();
-    closePopup(event.target.closest('.popup'));
+    closePopup(popupCard);
 }
 
 // Отправка новых данных из формы карточки
