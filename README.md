@@ -1,4 +1,5 @@
 # Проектная работа Mesto
 Проект 5го спринта "Основы JavaScript, базовые типы, работа с DOM", 6го спринта "Работы с событиями и формами в JS. Сборка кода и модульность" и 7го спринта "Сборка кода, обработка событий, валидация форм и работа с API"
 
-Ссылка на репозиторий: https://github.com/lizagl5/mesto-project-ff.git  Ссылка на сайт: https://lizagl5.github.io/mesto-project-ff
+Ссылка на репозиторий: https://github.com/lizagl5/mesto-project-ff.git  
+Ссылка на сайт: https://lizagl5.github.io/mesto-project-ff
