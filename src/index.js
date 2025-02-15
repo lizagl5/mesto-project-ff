@@ -1,7 +1,9 @@
 import './index.css';
-import { initialCards } from './cards';
 import { createCard, removeCard, handleCardLike } from './components/card.js';
 import { openPopup, closePopup, handlePopupCloseOverlay } from './components/modal.js';
+import { enableValidation, clearValidation } from './components/validation.js';
+import { getProfileData,  getCards, updateRemoteProfile, addRemoteCard } from './components/api.js';
+
 
 // DOM узлы
 const cardsContainer = document.querySelector('.places__list');
@@ -22,16 +24,23 @@ const nameCardInput = cardForm.elements['place-name'];
 const linkCardInput = cardForm.elements.link;
 const popupsList = document.querySelectorAll('.popup');
 const buttonsPopupClose = document.querySelectorAll('.popup__close');
+const avatar = document.querySelector('.profile__image');
 
-// Вывести карточки на страницу
-for (let i = 0; i < initialCards.length; i++) {
-    cardsContainer.append(createCard(initialCards[i], popupImage, removeCard, handleCardLike, openPopupImage));
-}
+// Объект настроек для функции включения валидации
+const validationConfig = {
+    formSelector: '.popup__form',
+    inputSelector: '.popup__input',
+    submitButtonSelector: '.popup__button',
+    inactiveButtonClass: 'popup__button_disabled',
+    inputErrorClass: 'popup__input_type_error',
+    errorClass: 'popup__error_visible'
+  }
 
 // Блок попапа профиля
 // Функция открытия модального окна профиля
 function openPopupProfile(popup) {
     openPopup(popup);
+    clearValidation(profileForm, validationConfig);
     jobInput.value = currentJob.textContent;
     nameInput.value = currentName.textContent;
 }
@@ -46,6 +55,7 @@ function handleFormSubmitProfile(event) {
     event.preventDefault();
     currentJob.textContent = jobInput.value;
     currentName.textContent = nameInput.value;
+    updateRemoteProfile(nameInput.value, jobInput.value);
     closePopup(popupProfile);
 }
 
@@ -56,6 +66,7 @@ profileForm.addEventListener('submit', handleFormSubmitProfile);
 // Функция открытия модального окна добавления карточки
 function openPopupCard(popup) {
     openPopup(popup);
+    clearValidation(cardForm, validationConfig);
 }
 
 // Открыть и закрыть модальное окно для добавления карточки
@@ -70,6 +81,7 @@ function handleFormSubmitCard(event) {
         name: nameCardInput.value,
         link: linkCardInput.value
     };
+    addRemoteCard(nameCardInput.value, linkCardInput.value);
     cardsContainer.prepend(createCard(cardFormData, popupImage, removeCard, handleCardLike, openPopupImage));
     cardForm.reset();
     closePopup(popupCard);
@@ -106,3 +118,27 @@ popupsList.forEach(function(element) {
     handlePopupCloseOverlay(event, element);
     });
 });
+
+// Запустить валидацию форм
+enableValidation(validationConfig);
+
+
+// Получить данные пользователя и карточки с сервера
+const promisesProfileCards = [ getProfileData(), getCards() ]
+Promise.all(promisesProfileCards)
+    .then(([ profileData, cardsData ]) => {
+        currentName.textContent = profileData.name;
+        currentJob.textContent = profileData.about;
+        avatar.style.backgroundImage = `url(${profileData.avatar}`;
+
+        cardsData.forEach(function(card) {
+            cardsContainer.append(
+                createCard({
+                    'name': card.name, 'link': card.link, 'likes': card.likes.length, 'cardId': card._id, 'ownerId': card.owner._id, 'profileId': profileData._id
+                }, 
+                    popupImage, removeCard, handleCardLike, openPopupImage))
+        });
+        console.log(cardsData)
+    })
+
+

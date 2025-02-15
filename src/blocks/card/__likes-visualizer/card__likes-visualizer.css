@@ -1,0 +1,6 @@
+.card__likes-visualizer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+}
