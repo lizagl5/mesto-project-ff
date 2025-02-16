@@ -2,7 +2,7 @@ import './index.css';
 import { createCard, removeCard, handleCardLike } from './components/card.js';
 import { openPopup, closePopup, handlePopupCloseOverlay } from './components/modal.js';
 import { enableValidation, clearValidation } from './components/validation.js';
-import { getProfileData,  getCards, updateRemoteProfile, addRemoteCard } from './components/api.js';
+import { getProfileData,  getCards, updateRemoteProfile, addRemoteCard, updateRemoteAvatar } from './components/api.js';
 
 
 // DOM узлы
@@ -25,6 +25,9 @@ const linkCardInput = cardForm.elements.link;
 const popupsList = document.querySelectorAll('.popup');
 const buttonsPopupClose = document.querySelectorAll('.popup__close');
 const avatar = document.querySelector('.profile__image');
+const avatarForm = document.forms['edit-avatar'];
+const popupAvatar = document.querySelector('.popup_type_avatar_edit');
+const avatarInput = avatarForm.elements.avatarLink;
 
 // Объект настроек для функции включения валидации
 const validationConfig = {
@@ -50,17 +53,73 @@ buttonProfile.addEventListener('click', function() {
     openPopupProfile(popupProfile);
 });
 
-// Обработчик «отправки» формы профиля
+// Обработчик отправки формы профиля
 function handleFormSubmitProfile(event) {
     event.preventDefault();
     currentJob.textContent = jobInput.value;
     currentName.textContent = nameInput.value;
-    updateRemoteProfile(nameInput.value, jobInput.value);
+    renderLoading(popupProfile, true);
+    updateRemoteProfile(nameInput.value, jobInput.value)
+    .then((res) => {
+        if (res.ok) {
+            return res.json();
+        }
+        return Promise.reject(`Ошибка: ${res.status}`);
+    })
+    .then((data) => {
+        return data
+    })
+    .catch((err) => {
+        console.log(`Ошибка: ${err}`)
+    })
+    .finally(() => {
+        renderLoading(popupProfile, false)
+    })
     closePopup(popupProfile);
 }
 
 // Отправка новых данных из формы профиля
 profileForm.addEventListener('submit', handleFormSubmitProfile);
+
+// Блок попапа аватара
+// Функция открытия модального окна редактирования аватара
+function openPopupAvatar(popup) {
+    openPopup(popup);
+    clearValidation(avatarForm, validationConfig);
+}
+
+// Открыть и закрыть модальное окно для редактирования аватара
+avatar.addEventListener('click', function() {
+    openPopupAvatar(popupAvatar);
+});
+
+// Обработчик отправки формы редактирования аватара
+function handleFormSubmitAvatar(event) {
+    event.preventDefault();
+    avatar.style.backgroundImage = `url(${avatarInput.value}`;
+    renderLoading(popupAvatar, true);
+    updateRemoteAvatar(avatarInput.value)
+    .then((res) => {
+        if (res.ok) {
+            return res.json();
+        }
+        return Promise.reject(`Ошибка: ${res.status}`);
+    })
+    .then((data) => {
+        return data
+    })
+    .catch((err) => {
+        console.log(`Ошибка: ${err}`)
+    })
+    .finally(() => {
+        renderLoading(popupAvatar, false)
+    })
+    avatarForm.reset();
+    closePopup(popupAvatar);
+}
+
+// Отправка новой картинки из формы редактирования аватара
+avatarForm.addEventListener('submit', handleFormSubmitAvatar);
 
 // Блок попапа карточки
 // Функция открытия модального окна добавления карточки
@@ -74,15 +133,29 @@ buttonCard.addEventListener('click', function() {
     openPopupCard(popupCard);
 });
 
-// Обработчик «отправки» формы карточки
+// Обработчик отправки формы карточки
 function handleFormSubmitCard(event) {
     event.preventDefault();
-    const cardFormData = {
-        name: nameCardInput.value,
-        link: linkCardInput.value
-    };
-    addRemoteCard(nameCardInput.value, linkCardInput.value);
-    cardsContainer.prepend(createCard(cardFormData, popupImage, removeCard, handleCardLike, openPopupImage));
+    renderLoading(popupCard, true);
+    addRemoteCard(nameCardInput.value, linkCardInput.value)
+    .then((res) => {
+        if (res.ok) {
+            return res.json();
+        }
+        return Promise.reject(`Ошибка: ${res.status}`);
+    })
+    .then((card) => {
+        const cardData = {
+            'name': card.name, 'link': card.link, 'likes': card.likes.length, 'cardId': card._id, 'ownerId': 'mine'
+        }
+        cardsContainer.prepend(createCard(cardData, popupImage, removeCard, handleCardLike, openPopupImage));
+    })
+    .catch((err) => {
+        console.log(`Ошибка: ${err}`)
+    })
+    .finally(() => {
+        renderLoading(popupCard, false)
+    })
     cardForm.reset();
     closePopup(popupCard);
 }
@@ -125,6 +198,7 @@ enableValidation(validationConfig);
 
 // Получить данные пользователя и карточки с сервера
 const promisesProfileCards = [ getProfileData(), getCards() ]
+
 Promise.all(promisesProfileCards)
     .then(([ profileData, cardsData ]) => {
         currentName.textContent = profileData.name;
@@ -134,11 +208,20 @@ Promise.all(promisesProfileCards)
         cardsData.forEach(function(card) {
             cardsContainer.append(
                 createCard({
-                    'name': card.name, 'link': card.link, 'likes': card.likes.length, 'cardId': card._id, 'ownerId': card.owner._id, 'profileId': profileData._id
+                    'name': card.name, 'link': card.link, 'likes': card.likes.length, 'cardId': card._id, 'ownerId': card.owner._id, 'profileId':  profileData._id
                 }, 
                     popupImage, removeCard, handleCardLike, openPopupImage))
         });
-        console.log(cardsData)
     })
+
+// Добавить отражение ожидания ответа от сервера
+function renderLoading(popup, isLoading) {
+    const buttonElement = popup.querySelector('.popup__button');
+    if (isLoading) {
+        buttonElement.textContent = 'Сохранение...';
+    } else {
+        buttonElement.textContent = 'Сохранить';
+    }
+  }
 
 
