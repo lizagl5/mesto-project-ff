@@ -19,7 +19,7 @@ function hideInputError(popupForm, inputForm, validationConfig) {
 // Функция проверки валидности поля
 function isValid(popupForm, inputForm, validationConfig) {
     if (inputForm.validity.patternMismatch) {
-      inputForm.setCustomValidity('Разрешены только латинские и кириллические буквы, знаки дефиса и пробелы.');
+      inputForm.setCustomValidity(inputForm.dataset.errorMessage);
     } else {
       inputForm.setCustomValidity('');
     }
@@ -77,7 +77,8 @@ function clearValidation(popupForm, validationConfig) {
   const inputList = Array.from(popupForm.querySelectorAll(validationConfig.inputSelector));
   const buttonElement = popupForm.querySelector(validationConfig.submitButtonSelector);
   inputList.forEach(function(inputElement) {
-    hideInputError(popupForm, inputElement, validationConfig)
+    hideInputError(popupForm, inputElement, validationConfig);
+    inputElement.setCustomValidity("");
   });
   toggleSubmitButton(inputList, buttonElement, validationConfig)
 }

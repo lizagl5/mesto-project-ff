@@ -7,24 +7,20 @@ const config = {
     }
   }
 
+// Функция проверки ответа сервера и возвращения ответа или объекта ошибки
+function handleRemoteResponse(res) {
+    if (res.ok) {
+        return res.json();
+    }
+    return Promise.reject(`Ошибка: ${res.status}`);
+    }
 
 // Получить данные пользователя
 const getProfileData = () => {
     return fetch(`${config.baseUrl}/users/me`, {
         headers: config.headers,
     })
-    .then((res) => {
-        if (res.ok) {
-            return res.json();
-        }
-        return Promise.reject(`Ошибка: ${res.status}`);
-    })
-    .then((data) => {
-        return data
-    })
-    .catch((err) => {
-        console.log(`Ошибка: ${err}`)
-    })
+    .then(handleRemoteResponse)
 }
 
 // Получить данные карточек
@@ -32,18 +28,7 @@ const getCards = () => {
     return fetch(`${config.baseUrl}/cards`, {
         headers: config.headers,
     })
-    .then((res) => {
-        if (res.ok) {
-            return res.json();
-        }
-        return Promise.reject(`Ошибка: ${res.status}`);
-    })
-    .then((data) => {
-        return data
-    })
-    .catch((err) => {
-        console.log(`Ошибка: ${err}`)
-    })
+    .then(handleRemoteResponse)
 }
 
 // Обновить данные о пользователе на сервере
@@ -59,6 +44,7 @@ const updateRemoteProfile = (name, about) => {
           about: about
         })
     })
+    .then(handleRemoteResponse)
 }
 
 // Добавить новую карточку на сервер
@@ -74,6 +60,7 @@ const addRemoteCard = (name, link) => {
           link: link
         })
     })
+    .then(handleRemoteResponse)
 }
 
 // Удалить карточку с сервера
@@ -84,6 +71,7 @@ const deleteRemoteCard = (id) => {
             'authorization': '70e783eb-c505-450e-9114-d893b593df43',
         }
     })
+    .then(handleRemoteResponse)
 }
 
 // Поставить лайк
@@ -92,6 +80,7 @@ const likeCard = (id) => {
         method: 'PUT',
         headers: config.headers,
     })
+    .then(handleRemoteResponse)
 }
 
 // Убрать лайк
@@ -100,6 +89,7 @@ const unlikeCard = (id) => {
         method: 'DELETE',
         headers: config.headers,
     })
+    .then(handleRemoteResponse)
 }
 
 // Обновить аватар
@@ -115,6 +105,7 @@ const updateRemoteAvatar = (avatarLink) => {
           avatar: avatarLink,
         })
     })
+    .then(handleRemoteResponse)
 }
 
 export { getProfileData,  getCards, updateRemoteProfile, addRemoteCard, updateRemoteAvatar }

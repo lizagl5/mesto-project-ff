@@ -1,5 +1,6 @@
 // Для работы с карточками
 
+import { currentName, currentJob } from '../index.js';
 import { deleteRemoteCard, likeCard, unlikeCard } from '../components/api.js';
 
 // Темплейт карточки
@@ -16,7 +17,7 @@ function createCard(cardData, popup, handleDelete, handleLike, handlePopup) {
     cardImage.src = cardData.link;
     cardImage.alt = cardData.name;
     cardTitle.textContent = cardData.name;
-    likesNumber.textContent = cardData.likes;
+    likesNumber.textContent = cardData.likes.length;
 
     // Создать кнопку удаления карточки
     function createDeleteMarkup() {
@@ -33,6 +34,17 @@ function createCard(cardData, popup, handleDelete, handleLike, handlePopup) {
     }
 
     checkCardAuthor()
+
+    // Проверить есть ли лайк от владельца профиля
+    function checkMyLike() {
+        for (let n = 0; n < cardData.likes.length; n++) {
+            if ((cardData.likes[n].name === currentName.textContent) && (cardData.likes[n].about === currentJob.textContent)) {
+                likeButton.classList.add('card__like-button_is-active');
+            }
+        }
+    }
+    
+    checkMyLike()
 
     const deleteButton = cardElement.querySelector('.card__delete-button');
     if (deleteButton) {
@@ -56,31 +68,18 @@ function createCard(cardData, popup, handleDelete, handleLike, handlePopup) {
 // Функция удаления карточки
 function removeCard(card, id) {
     deleteRemoteCard(id)
-    .then((res) => {
-        if (res.ok) {
-            return res.json();
-        }
-        return Promise.reject(`Ошибка: ${res.status}`);
-    })
-    .then((data) => {
-        return data
+    .then(() => {
+        card.remove();
     })
     .catch((err) => {
         console.log(`Ошибка: ${err}`)
     })
-    card.remove();
 }
 
 // Обработчик лайка карточки
 function handleCardLike(event, id, likesNumber) {
     if (event.target.classList.contains('card__like-button_is-active')) {
         unlikeCard(id, likesNumber)
-        .then((res) => {
-            if (res.ok) {
-                return res.json();
-            }
-            return Promise.reject(`Ошибка: ${res.status}`);
-        })
         .then((cardData) => {
             event.target.classList.remove('card__like-button_is-active')
             likesNumber.textContent = cardData.likes.length;
@@ -90,12 +89,6 @@ function handleCardLike(event, id, likesNumber) {
         })
     } else {
         likeCard(id)
-        .then((res) => {
-            if (res.ok) {
-                return res.json();
-            }
-            return Promise.reject(`Ошибка: ${res.status}`);
-        })
         .then((cardData) => {
             event.target.classList.add('card__like-button_is-active')
             likesNumber.textContent = cardData.likes.length;

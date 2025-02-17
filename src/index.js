@@ -56,18 +56,12 @@ buttonProfile.addEventListener('click', function() {
 // Обработчик отправки формы профиля
 function handleFormSubmitProfile(event) {
     event.preventDefault();
-    currentJob.textContent = jobInput.value;
-    currentName.textContent = nameInput.value;
     renderLoading(popupProfile, true);
     updateRemoteProfile(nameInput.value, jobInput.value)
-    .then((res) => {
-        if (res.ok) {
-            return res.json();
-        }
-        return Promise.reject(`Ошибка: ${res.status}`);
-    })
-    .then((data) => {
-        return data
+    .then(() => {
+        currentJob.textContent = jobInput.value;
+        currentName.textContent = nameInput.value;
+        closePopup(popupProfile);
     })
     .catch((err) => {
         console.log(`Ошибка: ${err}`)
@@ -75,7 +69,6 @@ function handleFormSubmitProfile(event) {
     .finally(() => {
         renderLoading(popupProfile, false)
     })
-    closePopup(popupProfile);
 }
 
 // Отправка новых данных из формы профиля
@@ -96,17 +89,12 @@ avatar.addEventListener('click', function() {
 // Обработчик отправки формы редактирования аватара
 function handleFormSubmitAvatar(event) {
     event.preventDefault();
-    avatar.style.backgroundImage = `url(${avatarInput.value}`;
     renderLoading(popupAvatar, true);
     updateRemoteAvatar(avatarInput.value)
-    .then((res) => {
-        if (res.ok) {
-            return res.json();
-        }
-        return Promise.reject(`Ошибка: ${res.status}`);
-    })
-    .then((data) => {
-        return data
+    .then(() => {
+        avatar.style.backgroundImage = `url(${avatarInput.value}`;
+        avatarForm.reset();
+        closePopup(popupAvatar);
     })
     .catch((err) => {
         console.log(`Ошибка: ${err}`)
@@ -114,8 +102,6 @@ function handleFormSubmitAvatar(event) {
     .finally(() => {
         renderLoading(popupAvatar, false)
     })
-    avatarForm.reset();
-    closePopup(popupAvatar);
 }
 
 // Отправка новой картинки из формы редактирования аватара
@@ -138,17 +124,13 @@ function handleFormSubmitCard(event) {
     event.preventDefault();
     renderLoading(popupCard, true);
     addRemoteCard(nameCardInput.value, linkCardInput.value)
-    .then((res) => {
-        if (res.ok) {
-            return res.json();
-        }
-        return Promise.reject(`Ошибка: ${res.status}`);
-    })
     .then((card) => {
         const cardData = {
-            'name': card.name, 'link': card.link, 'likes': card.likes.length, 'cardId': card._id, 'ownerId': 'mine'
+            'name': card.name, 'link': card.link, 'likes': card.likes, 'cardId': card._id, 'ownerId': 'mine'
         }
         cardsContainer.prepend(createCard(cardData, popupImage, removeCard, handleCardLike, openPopupImage));
+        cardForm.reset();
+        closePopup(popupCard);
     })
     .catch((err) => {
         console.log(`Ошибка: ${err}`)
@@ -156,8 +138,6 @@ function handleFormSubmitCard(event) {
     .finally(() => {
         renderLoading(popupCard, false)
     })
-    cardForm.reset();
-    closePopup(popupCard);
 }
 
 // Отправка новых данных из формы карточки
@@ -208,10 +188,13 @@ Promise.all(promisesProfileCards)
         cardsData.forEach(function(card) {
             cardsContainer.append(
                 createCard({
-                    'name': card.name, 'link': card.link, 'likes': card.likes.length, 'cardId': card._id, 'ownerId': card.owner._id, 'profileId':  profileData._id
+                    'name': card.name, 'link': card.link, 'likes': card.likes, 'cardId': card._id, 'ownerId': card.owner._id, 'profileId':  profileData._id
                 }, 
                     popupImage, removeCard, handleCardLike, openPopupImage))
         });
+    })
+    .catch((err) => {
+        console.log(`Ошибка: ${err}`)
     })
 
 // Добавить отражение ожидания ответа от сервера
@@ -223,5 +206,7 @@ function renderLoading(popup, isLoading) {
         buttonElement.textContent = 'Сохранить';
     }
   }
+  
+  export { currentName, currentJob }
 
 
