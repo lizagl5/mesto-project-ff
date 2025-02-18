@@ -206,7 +206,4 @@ function renderLoading(popup, isLoading) {
         buttonElement.textContent = 'Сохранить';
     }
   }
-  
-  export { currentName, currentJob }
-
 

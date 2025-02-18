@@ -1,6 +1,5 @@
 // Для работы с карточками
 
-import { currentName, currentJob } from '../index.js';
 import { deleteRemoteCard, likeCard, unlikeCard } from '../components/api.js';
 
 // Темплейт карточки
@@ -36,15 +35,8 @@ function createCard(cardData, popup, handleDelete, handleLike, handlePopup) {
     checkCardAuthor()
 
     // Проверить есть ли лайк от владельца профиля
-    function checkMyLike() {
-        for (let n = 0; n < cardData.likes.length; n++) {
-            if ((cardData.likes[n].name === currentName.textContent) && (cardData.likes[n].about === currentJob.textContent)) {
-                likeButton.classList.add('card__like-button_is-active');
-            }
-        }
-    }
-    
-    checkMyLike()
+    const isLiked = cardData.likes.some((like) => like._id === cardData.profileId);
+    if (isLiked) likeButton.classList.add("card__like-button_is-active");
 
     const deleteButton = cardElement.querySelector('.card__delete-button');
     if (deleteButton) {
